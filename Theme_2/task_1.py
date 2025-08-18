@@ -7,6 +7,7 @@ import asyncio
 
 url = "http://www.skuad-dev.nots-fns.ru/api/info"
 REQUEST_COUNT = 10
+SEQUENCE = range(REQUEST_COUNT)
 
 
 def ping_skuad_dev():
@@ -21,21 +22,21 @@ async def a_ping_skuad_dev(session: ClientSession):
 
 def sync_launch() -> float:
     start = time.time()
-    for _ in range(REQUEST_COUNT):
+    for _ in SEQUENCE:
         ping_skuad_dev()
     return time.time() - start
 
 
 async def async_launch() -> float:
     async with ClientSession() as session:
-        tasks = [a_ping_skuad_dev(session) for _ in range(REQUEST_COUNT)]
+        tasks = [a_ping_skuad_dev(session) for _ in SEQUENCE]
         start = time.time()
         await asyncio.gather(*tasks)
     return time.time() - start
 
 
 def launch_multiprocess() -> float:
-    processes = [Process(target=ping_skuad_dev) for _ in range(REQUEST_COUNT)]
+    processes = [Process(target=ping_skuad_dev) for _ in SEQUENCE]
     start = time.time()
     for process in processes:
         process.start()
@@ -45,7 +46,7 @@ def launch_multiprocess() -> float:
 
 
 def launch_multithreading() -> float:
-    threads = [threading.Thread(target=ping_skuad_dev) for _ in range(REQUEST_COUNT)]
+    threads = [threading.Thread(target=ping_skuad_dev) for _ in SEQUENCE]
     start = time.time()
     for thread in threads:
         thread.start()
