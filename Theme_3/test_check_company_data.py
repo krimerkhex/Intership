@@ -14,7 +14,7 @@ def get_company_ids():
 
 
 @pytest.mark.parametrize("company_id", get_company_ids())
-def test_check_data_existence(company_id):
+def test_check_company_data_existence(company_id):
     response = requests.get(url=COMPANY_DATA_URL, params={"id_company": int(company_id)})
     assert response.status_code == 200
     assert len(response.json()) != 0

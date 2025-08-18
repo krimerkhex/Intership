@@ -20,7 +20,7 @@ def get_variants() -> list[dict]:
 
 
 @pytest.mark.parametrize("data", get_variants())
-def test_different_parameters(data):
+def test_get_aggregated_data_different_parameters(data):
     response = requests.get(url=AGGREGATED_DATA_URL, params=data)
     assert response.status_code == 200
     assert len(response.json()) != 0
