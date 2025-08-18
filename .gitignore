@@ -1,2 +1,10 @@
 Theme_2/README.md
 Theme_3/README.md
+venv
+__pycache__
+.gitignore
+__pycache__/*
+*/__pycache__/*
+*/*/__pycache__/*
+*/*/*/__pycache__/*
+*/*/*/*/__pycache__/*

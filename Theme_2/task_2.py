@@ -1,10 +1,7 @@
 from math import factorial
-import requests
-from aiohttp import ClientSession
 import time
 import threading
-from multiprocessing import Process, Pool, cpu_count
-import asyncio
+from multiprocessing import Pool, cpu_count
 
 
 def sync_launch() -> float:
