@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from data_loading.csv_upload import data_loading_router
+from .data_loading.csv_upload import data_loading_router
 api_router = APIRouter(
     prefix="/api",
 )

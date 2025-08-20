@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import (
 
 from typing import AsyncGenerator
 
-from utils.config import config
+from utils.config.config import config
 
 
 class DatabaseConnector:

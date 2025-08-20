@@ -1,4 +1,7 @@
+from typing import Annotated
+
 from fastapi import APIRouter, UploadFile, status, HTTPException, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
 
 from utils.database.company_data_crud import CompanyDataCRUD

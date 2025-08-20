@@ -1,4 +1,4 @@
-from loguru import logging
+from loguru import logger
 from uvicorn import run as uvicorn_run
 from fastapi import FastAPI
 from argparse import ArgumentParser
@@ -14,9 +14,9 @@ def execute_server_core(arg_host: str, arg_port: int):
     try:
         uvicorn_run(app, host=arg_host, port=arg_port)
     except KeyboardInterrupt:
-        logging.warning("Web Site Service stopped working")
+        logger.warning("Web Site Service stopped working")
     except Exception as e:
-        logging.exception(e)
+        logger.exception(e)
 
 
 def setup_parser() -> (str, int):
