@@ -1,4 +1,9 @@
+import copy
+from typing import Hashable
+
 from fastapi import File
+from pandas import Series
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,15 +12,25 @@ from loguru import logger
 
 from utils.database.models import CompanyDataORM
 
+BANKRUPTCY_COLUMN = "возбуждено производство по делу о несостоятельности (банкротстве)"
+
+
+async def swipe_time(index: Hashable, row: Series) -> dict:
+    """
+    This function need's because i misunderstanding of data format in task.
+    """
+    result = {"company_name": index[0], "inn": str(index[1]), BANKRUPTCY_COLUMN: [*row.values, *index[2:]]}
+
+    return result
+
 
 class CompanyDataCRUD:
-    BANKRUPTCY_COLUMN = "возбуждено производство по делу о несостоятельности (банкротстве)"
-
     @staticmethod
     async def create_company_data(
             session: AsyncSession,
             company_data: dict
     ) -> CompanyDataORM:
+        logger.debug(company_data)
         logger.info("Creating an account_number record")
         main_data = {k: v for k, v in company_data.items()
                      if not k.startswith("возбуждено производство")}
@@ -31,7 +46,8 @@ class CompanyDataCRUD:
         try:
             await session.flush()
 
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            logger.error(e)
             await session.rollback()
             raise
 
@@ -43,9 +59,8 @@ class CompanyDataCRUD:
             session: AsyncSession,
     ):
         logger.info("Truncating account_number record's")
-        await session.execute('TRUNCATE TABLE company_data RESTART IDENTITY CASCADE')
+        await session.execute(text('TRUNCATE TABLE company_data RESTART IDENTITY CASCADE'))
         await session.commit()
-        logger.info("Truncating account_number record's")
 
     @staticmethod
     async def upload_file_data(
@@ -55,16 +70,17 @@ class CompanyDataCRUD:
         logger.info("Uploading file data to DB")
         await CompanyDataCRUD.truncate_company_data(session)
         df = pd.read_csv(csv_file.file)
-        if CompanyDataCRUD.BANKRUPTCY_COLUMN not in df.columns:
-            raise ValueError(f"Column '{CompanyDataCRUD.BANKRUPTCY_COLUMN}' not found")
+        if BANKRUPTCY_COLUMN not in df.columns:
+            raise ValueError(f"Column '{BANKRUPTCY_COLUMN}' not found")
 
         count = 0
 
-        for _, row in df.iterrows():
+        for index, row in df.iterrows():
             try:
-                await CompanyDataCRUD.create_company_data(session, row.to_dict())
+                await CompanyDataCRUD.create_company_data(session, await swipe_time(index, row))
                 count += 1
             except SQLAlchemyError:
                 pass
+        await session.commit()
 
         return {"Added": count, "Rejected": len(df) - count}

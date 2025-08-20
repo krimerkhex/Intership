@@ -5,7 +5,8 @@ from fastapi_server import app
 
 @pytest.fixture
 def client():
-    return TestClient(app)
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.mark.parametrize("a,b,expected", [

@@ -2,6 +2,8 @@
 
 export PYTHONENV=$(pwd)
 
+alembic downgrade base
+
 alembic upgrade head
 
-nohup python3 fastapi_main --host "0.0.0.0" > /dev/null 2>&1 &
+python3 fastapi_server.py --host "0.0.0.0"

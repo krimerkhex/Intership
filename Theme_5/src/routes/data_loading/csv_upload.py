@@ -16,14 +16,11 @@ async def upload_csv(
         file: UploadFile
 ):
     try:
-        if file.filename.endswith(".csv"):
-            count = CompanyDataCRUD.upload_file_data(session, file)
-            return {"Uploaded rows": count}
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="File must be csv."
-            )
+        logger.debug(file.filename)
+        if not file.filename.endswith(".csv"):
+            raise ValueError("File must be csv.")
+        count = await CompanyDataCRUD.upload_file_data(session, file)
+        return {"Info": count}
     except Exception as e:  # noqa
         logger.error(f"Error during CSV upload: {str(e)}")
         raise HTTPException(

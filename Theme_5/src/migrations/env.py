@@ -5,9 +5,17 @@ from sqlalchemy import pool
 
 from alembic import context
 
+from utils.config.config import config as app_config
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+DB_USER = app_config.db.USER
+DB_PASSWORD = app_config.db.PASSWORD
+DB_HOST = app_config.db.HOST
+DB_PORT = app_config.db.PORT
+DB_NAME = app_config.db.NAME
 
 database_url = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 print(database_url)
@@ -23,6 +31,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = None
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
