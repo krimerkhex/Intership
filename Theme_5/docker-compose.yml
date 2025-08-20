@@ -1,0 +1,42 @@
+services:
+  postgresql:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=test_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      start_period: 60s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./src
+    user: root
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgresql
+    env_file: ".env"
+    volumes: [ './src:/src' ]
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
