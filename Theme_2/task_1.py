@@ -5,9 +5,85 @@ import threading
 from multiprocessing import Process
 import asyncio
 
-url = "http://www.skuad-dev.nots-fns.ru/api/info"
+# url = "http://www.skuad-dev.nots-fns.ru/api/info"
+url = "http://ya.ru"
 REQUEST_COUNT = 10
 SEQUENCE = range(REQUEST_COUNT)
+
+
+def timer_decorator(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        func(*args, **kwargs)
+        elapsed = time.time() - start
+        print(f"{func.__name__} execution time: {elapsed:.2f} seconds")
+        return elapsed
+
+    return wrapper
+
+
+def a_timer_decorator(func):
+    async def wrapper(*args, **kwargs):
+        start = time.time()
+        await func(*args, **kwargs)
+        elapsed = time.time() - start
+        print(f"{func.__name__} execution time: {elapsed:.2f} seconds")
+        return elapsed
+
+    return wrapper
+
+
+def execution_factory(method: str):
+    """
+    methods: 'sync', 'async', 'multiprocess', 'multithread'
+    """
+
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            match method:
+                case 'async':
+                    return asyncio.run(async_execution(func, *args, **kwargs))
+                case 'multiprocess':
+                    return multiprocess_execution(func, *args, **kwargs)
+                case 'multithread':
+                    return multithread_execution(func, *args, **kwargs)
+                case _:
+                    return sync_execution(func, *args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+@timer_decorator
+def sync_execution(func, *args, **kwargs):
+    for _ in range(REQUEST_COUNT):
+        func(*args, **kwargs)
+
+
+@a_timer_decorator
+async def async_execution(func, *args, **kwargs):
+    async with ClientSession() as session:
+        tasks = [func(session) for _ in SEQUENCE]
+        await asyncio.gather(*tasks)
+
+
+@timer_decorator
+def multiprocess_execution(func, *args, **kwargs):
+    processes = [Process(target=func) for _ in SEQUENCE]
+    for p in processes:
+        p.start()
+    for p in processes:
+        p.join()
+
+
+@timer_decorator
+def multithread_execution(func, *args, **kwargs):
+    threads = [threading.Thread(target=func) for _ in SEQUENCE]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
 
 
 def ping_skuad_dev():
@@ -20,43 +96,13 @@ async def a_ping_skuad_dev(session: ClientSession):
         return response.status
 
 
-def sync_launch() -> float:
-    start = time.time()
-    for _ in SEQUENCE:
-        ping_skuad_dev()
-    return time.time() - start
-
-
-async def async_launch() -> float:
-    async with ClientSession() as session:
-        tasks = [a_ping_skuad_dev(session) for _ in SEQUENCE]
-        start = time.time()
-        await asyncio.gather(*tasks)
-    return time.time() - start
-
-
-def launch_multiprocess() -> float:
-    processes = [Process(target=ping_skuad_dev) for _ in SEQUENCE]
-    start = time.time()
-    for process in processes:
-        process.start()
-    for process in processes:
-        process.join()
-    return time.time() - start
-
-
-def launch_multithreading() -> float:
-    threads = [threading.Thread(target=ping_skuad_dev) for _ in SEQUENCE]
-    start = time.time()
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-    return time.time() - start
-
-
 if __name__ == "__main__":
-    print("Sync launch: ", sync_launch())
-    print("Async launch: ", asyncio.run(async_launch()))
-    print("Multiprocess launch: ", launch_multiprocess())
-    print("Multithreading launch: ", launch_multithreading())
+    sync_runner = execution_factory('sync')(ping_skuad_dev)
+    async_runner = execution_factory('async')(a_ping_skuad_dev)
+    mp_runner = execution_factory('multiprocess')(ping_skuad_dev)
+    mt_runner = execution_factory('multithread')(ping_skuad_dev)
+
+    sync_runner()
+    async_runner()
+    mp_runner()
+    mt_runner()

@@ -4,11 +4,10 @@ from fastapi import APIRouter, UploadFile, status, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
 
-from utils.database.company_data_crud import CompanyDataCRUD
+from utils.database.crud.company_data_crud import CompanyDataCRUD
 from utils.database.connecting import db_connector
 
 data_loading_router = APIRouter()
-
 
 @data_loading_router.post("/upload-csv", status_code=status.HTTP_201_CREATED)
 async def upload_csv(
@@ -22,6 +21,7 @@ async def upload_csv(
         count = await CompanyDataCRUD.upload_file_data(session, file)
         return {"Info": count}
     except Exception as e:  # noqa
+        logger.exception(e)
         logger.error(f"Error during CSV upload: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

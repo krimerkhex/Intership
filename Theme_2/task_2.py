@@ -6,28 +6,36 @@ from multiprocessing import Pool, cpu_count
 SEQUENCE = range(1, 1001)
 
 
-def sync_launch() -> float:
-    start = time.time()
+def timer_decorator(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        func(*args, **kwargs)
+        elapsed = time.time() - start
+        print(f"{func.__name__} execution time: {elapsed:.2f} seconds")
+        return elapsed
+
+    return wrapper
+
+
+@timer_decorator
+def sync_launch():
     for i in SEQUENCE:
         factorial(i)
-    return time.time() - start
 
 
-def launch_multiprocess() -> float:
-    start = time.time()
+@timer_decorator
+def launch_multiprocess():
     with Pool(cpu_count()) as pool:
         pool.map(factorial, SEQUENCE)
-    return time.time() - start
 
 
-def launch_multithreading() -> float:
+@timer_decorator
+def launch_multithreading():
     threads = [threading.Thread(target=factorial, args=[i]) for i in SEQUENCE]
-    start = time.time()
     for thread in threads:
         thread.start()
     for thread in threads:
         thread.join()
-    return time.time() - start
 
 
 if __name__ == "__main__":

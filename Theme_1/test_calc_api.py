@@ -2,6 +2,8 @@ import pytest
 from fastapi.testclient import TestClient
 from fastapi_server import app
 
+from requests import Response
+
 
 @pytest.fixture
 def client():
@@ -18,6 +20,7 @@ def client():
 ])
 def test_sum_numbers(a, b, expected, client):
     response = client.get(f"/calc/sum?a={a}&b={b}")
+    print(response.__dict__)
     assert response.status_code == 200
     assert response.json()["result"] == expected
 

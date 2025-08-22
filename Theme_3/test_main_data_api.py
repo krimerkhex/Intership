@@ -4,8 +4,8 @@ import requests
 from urls import MAIN_DATA_URL
 
 
-def test_main_data_empty_request(get_url):
-    response = requests.get(get_url)
+def test_main_data_empty_request():
+    response = requests.get(MAIN_DATA_URL)
     assert response.status_code == 200
     assert len(response.json()) != 0
 

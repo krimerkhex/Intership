@@ -22,9 +22,22 @@ def upgrade() -> None:
     op.create_table(
         'company_data',
         sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column('company_name', sa.String(length=50), nullable=False),
-        sa.Column('inn', sa.String(length=255), nullable=True),
-        sa.Column('bankruptcy_data', sa.JSON, nullable=False),
+        sa.Column('okved', sa.String(length=10), nullable=False),
+        sa.Column('okved_decoding', sa.String(length=255), nullable=False),
+        sa.Column('industry', sa.String(length=512), nullable=False),
+        sa.Column('region', sa.String(length=255), nullable=False),
+        sa.Column('district', sa.String(length=255), nullable=False),
+        sa.Column('business_value', sa.Float(), nullable=True),
+        sa.Column('liquidation_value', sa.Float(), nullable=True),
+        sa.Column('creditors_return', sa.Float(), nullable=True),
+        sa.Column('working_capital_needs', sa.Float(), nullable=True),
+        sa.Column('profit_before_tax', sa.Float(), nullable=True),
+        sa.Column('tax_debt', sa.Float(), nullable=True),
+        sa.Column('enforcement_proceedings', sa.Float(), nullable=True),
+        sa.Column('guarantee_limit', sa.String(length=255), nullable=True),
+        sa.Column('solvency_rank', sa.Float(), nullable=True),
+        sa.Column('company_age', sa.Float(), nullable=True),
+        sa.Column('bankruptcy_data', sa.JSON(), nullable=False),
         sa.PrimaryKeyConstraint('id')
     )
 

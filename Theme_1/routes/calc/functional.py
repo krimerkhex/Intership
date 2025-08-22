@@ -9,12 +9,12 @@ def sum_numbers(a: float, b: float):
 
 
 @calc_route.get("/multiply")
-def multiply_numbers(a: float, b: float):
+async def multiply_numbers(a: float, b: float):
     return {"result": a * b}
 
 
 @calc_route.get("/divide")
-def divide_numbers(a: float, b: float):
+async def divide_numbers(a: float, b: float):
     if b == 0:
         raise HTTPException(status_code=400, detail="Zero division error")
     return {"result": a / b}
