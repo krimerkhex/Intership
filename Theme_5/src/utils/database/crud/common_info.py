@@ -25,23 +25,26 @@ class CommonInfoCRUD:
         await session.commit()
 
     @staticmethod
-    async def calculate_common_info(session: AsyncSession, df: pd.DataFrame, selection: str, orm_class):
+    async def calculate_common_info(session: AsyncSession, df: pd.DataFrame, selection: str, records_ids: dict,
+                                    orm_class):
         region_agg = df.groupby(selection).agg({
-            'id': 'count',
+            'ID': 'count',
             'business_value': lambda x: (x > 0).sum(),
             'profit_before_tax': lambda x: (x > 0).sum(),
             'tax_debt': lambda x: (x == 0).sum(),
             'solvency_rank': lambda x: (x > 0).sum(),
             'working_capital_needs': lambda x: (x != 0).sum()
         }).rename(columns={
-            'id': 'total_companies',
+            'ID': 'total_companies',
             'business_value': 'companies_with_business_value',
             'profit_before_tax': 'profitable_companies',
             'tax_debt': 'debt_free_companies',
             'solvency_rank': 'solvent_companies',
             'working_capital_needs': 'companies_with_asset_profitability'
-        }).reset_index()
+        })
 
-        for _, row in region_agg.iterrows():
-            await CommonInfoCRUD.create_common_info(session, row.to_dict(), orm_class)
+        for index, row in region_agg.iterrows():
+            temp = row.to_dict()
+            temp[f"{selection}_id"] = records_ids[index]
+            await CommonInfoCRUD.create_common_info(session, temp, orm_class)
         await session.commit()

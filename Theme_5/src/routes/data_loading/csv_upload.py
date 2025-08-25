@@ -9,6 +9,7 @@ from utils.database.connecting import db_connector
 
 data_loading_router = APIRouter()
 
+
 @data_loading_router.post("/upload-csv", status_code=status.HTTP_201_CREATED)
 async def upload_csv(
         session: Annotated[AsyncSession, Depends(db_connector.session_getter)],

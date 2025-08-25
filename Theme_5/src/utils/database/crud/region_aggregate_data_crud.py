@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 import pandas as pd
+from loguru import logger
 
 from utils.database.models import RegionDataORM
 from utils.database.crud.aggregated_data_crud import DataCRUD
@@ -17,5 +18,5 @@ class RegionDataCRUD:
 
     @staticmethod
     async def calculate_region_aggregate_data(session: AsyncSession, df: pd.DataFrame):
-        region_agg = await DataCRUD.calculate_data_aggregate(session, df, "region", RegionDataORM)
-        await CommonInfoRegionCRUD.calculate_common_region_info(session, region_agg)
+        region_ids = await DataCRUD.calculate_data_aggregate(session, df, "region", RegionDataORM)
+        await CommonInfoRegionCRUD.calculate_common_region_info(session, df, region_ids)

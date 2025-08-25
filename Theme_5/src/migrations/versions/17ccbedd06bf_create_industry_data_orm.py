@@ -21,7 +21,7 @@ def upgrade() -> None:
     """Upgrade schema."""
     op.create_table('industry_data',
                     sa.Column('id', sa.Integer(), nullable=False, primary_key=True),
-                    sa.Column('county', sa.String(), nullable=False, unique=True),
+                    sa.Column('industry', sa.String(), nullable=False, unique=True),
                     sa.Column('avg_business_value', sa.Float(), nullable=True),
                     sa.Column('avg_liquidation_value', sa.Float(), nullable=True),
                     sa.Column('avg_creditors_return', sa.Float(), nullable=True),

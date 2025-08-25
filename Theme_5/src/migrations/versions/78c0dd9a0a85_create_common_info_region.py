@@ -21,7 +21,7 @@ def upgrade() -> None:
     """Upgrade schema."""
     op.create_table('common_info_region',
                     sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('region', sa.String(), sa.ForeignKey('region_data.region'), unique=True),
+                    sa.Column('region_id', sa.Integer(), sa.ForeignKey('region_data.id'), unique=True),
                     sa.Column('total_companies', sa.Integer()),
                     sa.Column('companies_with_business_value', sa.Integer()),
                     sa.Column('profitable_companies', sa.Integer()),

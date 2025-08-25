@@ -28,7 +28,8 @@ class CompanyDataORM(Base):
 
 
 class DataORM:
-    region = Column(String, unique=True)
+    __abstract__ = True
+
     avg_business_value = Column(Float, default=0.0)
     avg_liquidation_value = Column(Float, default=0.0)
     avg_creditors_return = Column(Float, default=0.0)
@@ -40,24 +41,28 @@ class RegionDataORM(Base, DataORM):
     __tablename__ = 'region_data'
 
     id = Column(Integer, primary_key=True)
-    common_region_info = relationship("CommonInfoRegion", backref="region_data", uselist=False)
+    region = Column(String(128), nullable=False)
+    common_region_info = relationship("CommonInfoRegion", back_populates="common_info")
 
 
 class DistrictDataORM(Base, DataORM):
     __tablename__ = 'district_data'
 
     id = Column(Integer, primary_key=True)
-    common_district_info = relationship("CommonInfoDistrict", backref="district_data", uselist=False)
+    district = Column(String(128), nullable=False)
+    common_district_info = relationship("CommonInfoDistrict", back_populates="common_info")
 
 
 class IndustryDataORM(Base, DataORM):
     __tablename__ = 'industry_data'
 
     id = Column(Integer, primary_key=True)
-    common_industry_info = relationship("CommonInfoIndustry", backref="industry_data", uselist=False)
+    industry = Column(String(128), nullable=False)
+    common_industry_info = relationship("CommonInfoIndustry", back_populates="common_info")
 
 
 class CommonInfo:
+    __abstract__ = True
     total_companies = Column(Integer)
     companies_with_business_value = Column(Integer)
     profitable_companies = Column(Integer)
@@ -70,21 +75,21 @@ class CommonInfoRegion(Base, CommonInfo):
     __tablename__ = 'common_info_region'
 
     id = Column(Integer, primary_key=True)
-    region = Column(Integer, ForeignKey('region_data.id'), unique=True)
-    common_info = relationship("CommonInfoCounty", backref="region_data", uselist=False)
+    region_id = Column(Integer, ForeignKey('region_data.id'), unique=True)
+    common_info = relationship("RegionDataORM", back_populates="common_region_info")
 
 
 class CommonInfoDistrict(Base, CommonInfo):
-    __tablename__ = 'common_info_county'
+    __tablename__ = 'common_info_district'
 
     id = Column(Integer, primary_key=True)
-    district = Column(Integer, ForeignKey('district_data.id'), unique=True)
-    common_info = relationship("CommonInfoCounty", backref="region_data", uselist=False)
+    district_id = Column(Integer, ForeignKey('district_data.id'), unique=True)
+    common_info = relationship("DistrictDataORM", back_populates="common_district_info")
 
 
 class CommonInfoIndustry(Base, CommonInfo):
     __tablename__ = 'common_info_industry'
 
     id = Column(Integer, primary_key=True)
-    industry = Column(Integer, ForeignKey('company_data.id'), unique=True)
-    common_info = relationship("CommonInfoIndustry", backref="region_data", uselist=False)
+    industry_id = Column(Integer, ForeignKey('industry_data.id'), unique=True)
+    common_info = relationship("IndustryDataORM", back_populates="common_industry_info")

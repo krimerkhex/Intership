@@ -12,8 +12,7 @@ class DataCRUD:
         new_data = orm_class(**data)
         session.add(new_data)
         await session.flush()
-        await session.refresh(new_data)
-        return new_data
+        return new_data.id
 
     @staticmethod
     @db_catcher("Truncating data table")
@@ -21,19 +20,27 @@ class DataCRUD:
         await session.execute(text(f'TRUNCATE TABLE {table_name} RESTART IDENTITY CASCADE'))
 
     @staticmethod
-    async def calculate_data_aggregate(session: AsyncSession, df: pd.DataFrame, group_by: str, orm_class):
+    async def calculate_data_aggregate(session: AsyncSession, df: pd.DataFrame, selection: str, orm_class):
         await DataCRUD.truncate_data_table(session, orm_class.__tablename__)
-
-        agg_data = df.groupby(group_by).agg({
+        agg_data = df.groupby(selection).agg({
             'business_value': 'mean',
             'liquidation_value': 'mean',
             'creditors_return': 'mean',
             'working_capital_needs': 'mean',
             'profit_before_tax': 'mean'
-        }).reset_index()
-
-        for _, row in agg_data.iterrows():
-            await DataCRUD.create_data_aggregate(session, row.to_dict(), orm_class)
+        })
+        agg_data = agg_data.rename(columns={
+            'business_value': 'avg_business_value',
+            'liquidation_value': 'avg_liquidation_value',
+            'creditors_return': 'avg_creditors_return',
+            'working_capital_needs': 'avg_working_capital_needs',
+            'profit_before_tax': 'avg_profit_before_tax',
+        })
+        ids = {}
+        for index, row in agg_data.iterrows():
+            temp = row.to_dict()
+            temp[selection] = index
+            ids[index] = await DataCRUD.create_data_aggregate(session, temp, orm_class)
         await session.commit()
 
-        return agg_data
+        return ids
